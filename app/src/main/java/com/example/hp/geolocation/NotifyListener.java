@@ -5,6 +5,8 @@ import android.widget.TextView;
 import com.baidu.location.BDLocation;
 import com.baidu.location.BDNotifyListener;
 
+import java.util.Date;
+import java.util.List;
 
 
 /**
@@ -12,12 +14,25 @@ import com.baidu.location.BDNotifyListener;
  */
 
 public class NotifyListener extends BDNotifyListener{
+    private int number;
     private Vibrator mVibrator;
-    public NotifyListener(Vibrator vibrator){
+    private List<LocationItem> mList;
+    private ItemLab mItemLab;
+    private MainActivity.LocationItemAdapter mItemAdapter;
+    public NotifyListener(Vibrator vibrator, ItemLab itemLab, MainActivity.LocationItemAdapter adapter){
         mVibrator = vibrator;
+        number=0;
+        mList = itemLab.getList();
+        mItemAdapter = adapter;
     }
     @Override
     public void onNotify(BDLocation bdLocation, float v) {
         mVibrator.vibrate(1000);
+        number++;
+        LocationItem item = new LocationItem();
+        item.setTime("第"+number+"签到！");
+        item.setDate(new Date());
+        mList.add(item);
+        mItemAdapter.notifyDataSetChanged();
     }
 }

@@ -11,9 +11,7 @@ import com.baidu.location.BDLocationListener;
  */
 
 public class MyLocationListener implements BDLocationListener {
-    private TextView mTextView;
-    public MyLocationListener(TextView textView){
-        mTextView = textView;
+    public MyLocationListener(){
     }
     @Override
     public void onReceiveLocation(BDLocation location) {
@@ -72,6 +70,6 @@ public class MyLocationListener implements BDLocationListener {
 
         Log.e("BaiduLocationApiDem", sb.toString());
         String locationString = "&location="+location.getLatitude()+","+location.getLongitude();
-        new LocationTask(mTextView).execute(locationString);
+        new LocationTask().execute(locationString);
     }
 }

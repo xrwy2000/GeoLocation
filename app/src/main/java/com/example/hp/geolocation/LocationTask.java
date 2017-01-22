@@ -20,9 +20,7 @@ import java.net.URL;
 public class LocationTask extends AsyncTask<String, Void, String> {
 
 
-    private TextView mTextView;
-    public LocationTask(TextView textView){
-        mTextView = textView;
+    public LocationTask(){
     }
     @Override
     protected String doInBackground(String... params) {
@@ -53,7 +51,6 @@ public class LocationTask extends AsyncTask<String, Void, String> {
             JSONObject root = new JSONObject(a2[0]);
             JSONObject child = root.getJSONObject("result");
             String result = child.getString("formatted_address");
-            mTextView.setText(result);
             Log.e("MainActivity",result);
         } catch (JSONException e) {
             e.printStackTrace();

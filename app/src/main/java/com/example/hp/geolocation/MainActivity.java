@@ -1,44 +1,34 @@
 package com.example.hp.geolocation;
 
-import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.location.Location;
+
 import android.location.LocationManager;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Vibrator;
-import android.support.v4.app.ActivityCompat;
+
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
-
-import com.baidu.location.BDLocation;
 import com.baidu.location.BDLocationListener;
 import com.baidu.location.BDNotifyListener;
 import com.baidu.location.LocationClient;
 import com.baidu.location.LocationClientOption;
 
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.w3c.dom.Text;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.security.Provider;
 import java.util.List;
+
 
 public class MainActivity extends AppCompatActivity {
 
     Button mButton;
-    TextView mTextView;
 
+    private int number = 0;
     private double latitude;//纬度
     private double longitude;//经度
 
@@ -49,6 +39,12 @@ public class MainActivity extends AppCompatActivity {
     public Vibrator mVibrator;
 
 
+    //视图
+    private RecyclerView mRecyclerView;
+
+    private LocationItemAdapter mItemAdapter;
+
+    ItemLab itemLab;
     public double getLongitude() {
         return longitude;
     }
@@ -66,41 +62,100 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.list);
 
 
-        mButton = (Button) findViewById(R.id.button);
-        mTextView = (TextView) findViewById(R.id.tv);
+        mButton = (Button) findViewById(R.id.cc);
         mVibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        initLocation();
+
+        mRecyclerView = (RecyclerView)findViewById(R.id.check_recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        updateUI();
+         initLocation();
+
 
         mButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    getLocationByBDLBS();
-                }
-            });
-        }
-    private void initLocation(){
+            @Override
+            public void onClick(View v) {
+                 getLocationByBDLBS();
+            }
+        });
+    }
+
+    private void updateUI(){
+        itemLab = ItemLab.get(this);
+        List<LocationItem> itemList = itemLab.getList();
+
+        mItemAdapter = new LocationItemAdapter(itemList);
+        mRecyclerView.setAdapter(mItemAdapter);
+    }
+    private void initLocation() {
         mLocationClient = new LocationClient(getApplicationContext());
-        myListener = new MyLocationListener(mTextView);
+        myListener = new MyLocationListener();
         mLocationClient.registerLocationListener(myListener);
         LocationClientOption option = new LocationClientOption();
         int span = 3000;
         option.setScanSpan(span);
         option.setIsNeedAddress(false);
         mLocationClient.setLocOption(option);
-        notify = new NotifyListener(mVibrator);
-        notify.SetNotifyLocation(29.63799,111.751078,3000,"gps");
+        notify = new NotifyListener(mVibrator,itemLab,mItemAdapter);
+        notify.SetNotifyLocation(29.63799, 111.751078, 3000, "gps");
         mLocationClient.registerNotify(notify);
+
     }
-    private void getLocationByBDLBS(){
+
+    private void getLocationByBDLBS() {
         mLocationClient.start();
         mVibrator.vibrate(1000);
+
+    }
+
+
+    private class LocationItemHolder extends RecyclerView.ViewHolder{
+
+        private LocationItem mItem;
+        private TextView time;
+        private TextView checkTime;
+        public LocationItemHolder(View itemView) {
+            super(itemView);
+            time = (TextView) itemView.findViewById(R.id.time);
+            checkTime = (TextView) itemView.findViewById(R.id.check_time);
+        }
+        public void bindItem(LocationItem item){
+            mItem = item;
+            time.setText(mItem.getTime());
+            checkTime.setText(mItem.getDate().toString());
+        }
+    }
+
+    public class LocationItemAdapter extends RecyclerView.Adapter<LocationItemHolder>{
+
+        private List<LocationItem> mList;
+        public LocationItemAdapter(List<LocationItem> list){
+            mList = list;
+        }
+        @Override
+        public LocationItemHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
+            View view = layoutInflater.inflate(R.layout.item,parent,false);
+
+            return new LocationItemHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(LocationItemHolder holder, int position) {
+
+            LocationItem item = mList.get(position);
+            holder.bindItem(item);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mList.size();
+        }
     }
 
 
